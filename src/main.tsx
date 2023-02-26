@@ -1,6 +1,6 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App'
+// import React from 'react'
+// import ReactDOM from 'react-dom/client'
+// import App from './App'
 
 // ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
 //   <React.StrictMode>
@@ -12,8 +12,8 @@ const element = {
   type: 'h1',
   props: {
     title: 'foo',
-    children: 'Hello React'
-  }
+    children: 'Hello React',
+  },
 }
 
 const container = document.querySelector('#root')!

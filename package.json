@@ -1,12 +1,13 @@
 {
   "name": "mini-react",
-  "private": true,
-  "version": "0.0.0",
   "type": "module",
+  "version": "0.0.0",
+  "private": true,
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint ."
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -16,7 +17,12 @@
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
     "@vitejs/plugin-react-swc": "^3.0.0",
+    "@yuusheng/eslint-config": "^0.0.4",
+    "eslint": "^8.35.0",
     "typescript": "^4.9.3",
     "vite": "^4.1.0"
+  },
+  "eslintConfig": {
+    "extends": "@yuusheng"
   }
 }
