@@ -1,21 +1,13 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { createElement } from './core'
+import { createElement, render } from './core'
 
 /** @jsx createElement */
 const element = (
   <div id="foo">
-    <a>bar</a>
-    <b />
+    <h1>Hello React</h1>
   </div>
 )
 
-const container = document.querySelector('#root')!
+const container = document.querySelector('#root') as HTMLElement
 
-const node = document.createElement(element.type)
-node.title = element.props.title
-
-const textNode = document.createTextNode('')
-textNode.nodeValue = element.props.children
-
-node.appendChild(textNode)
-container.appendChild(node)
+render(element, container)

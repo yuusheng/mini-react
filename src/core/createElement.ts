@@ -1,3 +1,4 @@
+import type { ReactElement } from '~/types'
 import { isObject } from '~/utils'
 
 export function createElement(type: string, props?: any, ...children: any[]) {
@@ -11,7 +12,7 @@ export function createElement(type: string, props?: any, ...children: any[]) {
           : createTextElement(child),
       ),
     },
-  }
+  } as ReactElement
 }
 
 function createTextElement(text: string) {
@@ -21,5 +22,5 @@ function createTextElement(text: string) {
       nodeValue: text,
       children: [],
     },
-  }
+  } as ReactElement
 }
