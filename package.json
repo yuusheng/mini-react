@@ -14,8 +14,10 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@types/node": "^18.14.1",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
+    "@vitejs/plugin-react": "^3.1.0",
     "@vitejs/plugin-react-swc": "^3.0.0",
     "@yuusheng/eslint-config": "^0.0.4",
     "eslint": "^8.35.0",

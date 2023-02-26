@@ -1,20 +1,13 @@
-// import React from 'react'
-// import ReactDOM from 'react-dom/client'
-// import App from './App'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { createElement } from './core'
 
-// ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-//   <React.StrictMode>
-//     <App />
-//   </React.StrictMode>,
-// )
-
-const element = {
-  type: 'h1',
-  props: {
-    title: 'foo',
-    children: 'Hello React',
-  },
-}
+/** @jsx createElement */
+const element = (
+  <div id="foo">
+    <a>bar</a>
+    <b />
+  </div>
+)
 
 const container = document.querySelector('#root')!
 
