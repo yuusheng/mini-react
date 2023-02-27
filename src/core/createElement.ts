@@ -1,7 +1,7 @@
-import type { ReactElement } from '~/types'
+import type { NODE_TYPE, ReactElement } from '~/types'
 import { isObject } from '~/utils'
 
-export function createElement(type: string, props?: any, ...children: any[]) {
+export function createElement(type: NODE_TYPE, props?: any, ...children: any[]) {
   return {
     type,
     props: {
