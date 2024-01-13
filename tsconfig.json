@@ -14,11 +14,7 @@
     "moduleResolution": "Node",
     "resolveJsonModule": true,
     "noEmit": true,
-    "jsx": "react-jsx",
-    "paths": {
-      "~/*": ["src/*"]
-    }
+    "jsx": "preserve",
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["packages/**/*", "playground/*"],
 }

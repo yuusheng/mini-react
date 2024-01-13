@@ -1,4 +1,4 @@
-import type { Fiber, ReactElement } from '~/types'
+import type { Fiber, ReactElement } from '../types'
 
 let nextUnitOfWork: Fiber
 

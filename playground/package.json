@@ -1,0 +1,11 @@
+{
+  "name": "@mini-react/playground",
+  "type": "module",
+  "scripts": {
+    "dev": "vite"
+  },
+  "dependencies": {
+    "mini-react": "workspace:*",
+    "vite": "^5.0.11"
+  }
+}
