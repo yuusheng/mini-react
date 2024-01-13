@@ -2,26 +2,26 @@ import type { Fiber, ReactElement } from '../types'
 
 let nextUnitOfWork: Fiber
 
-export function render(element: ReactElement, container: HTMLElement | Text) {
-  // const dom = element.type !== 'TEXT_ELEMENT'
-  //   ? document.createElement(element.type)
-  //   : document.createTextNode('')
+export function render(element: ReactElement, container: (HTMLElement | Text)) {
+  const dom = element.type !== 'TEXT_ELEMENT'
+    ? document.createElement(element.type)
+    : document.createTextNode('')
 
-  // const isProperty = (key: string) => key !== 'children'
-  // Object.keys(element.props)
-  //   .filter(isProperty)
-  //   .forEach((name) => {
-  //     dom[name] = element.props[name]
-  //   })
+  const isProperty = (key: string) => key !== 'children'
+  Object.keys(element.props)
+    .filter(isProperty)
+    .forEach((name) => { 
+      dom[name] = element.props[name]
+    })
 
-  // element.props.children.forEach(child => render(child, dom))
-  // container.appendChild(dom)
-  nextUnitOfWork = {
-    dom: container as HTMLElement,
-    props: {
-      children: [element],
-    },
-  }
+  element.props.children.forEach(child => render(child, dom))
+  container.appendChild(dom)
+  // nextUnitOfWork = {
+  //   dom: container as HTMLElement,
+  //   props: {
+  //     children: [element],
+  //   },
+  // }
 }
 
 function createDom(fiber: any) {

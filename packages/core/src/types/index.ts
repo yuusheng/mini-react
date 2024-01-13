@@ -8,6 +8,14 @@ export interface ReactElement {
   }
 }
 
+export interface JSXTransformedElement {
+  type: NODE_TYPE | (() => ReactElement)
+  props: {
+    [key: string]: any
+    children: ReactElement[]
+  }
+}
+
 export interface Fiber {
   dom: HTMLElement
   props: {
