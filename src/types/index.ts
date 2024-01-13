@@ -7,3 +7,13 @@ export interface ReactElement {
     children: ReactElement[]
   }
 }
+
+export interface Fiber {
+  dom: HTMLElement
+  props: {
+    children: ReactElement[]
+  }
+  parent?: Fiber
+  child?: Fiber
+  sibling?: Fiber
+}
