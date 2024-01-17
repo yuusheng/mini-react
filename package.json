@@ -4,9 +4,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
+    "dev": "pnpm -C playground dev",
+    "test": "vitest",
     "lint": "eslint ."
   },
   "devDependencies": {
@@ -14,7 +13,9 @@
     "@vitejs/plugin-react": "^3.1.0",
     "@yuusheng/eslint-config": "^0.0.4",
     "eslint": "^8.35.0",
-    "typescript": "^4.9.3"
+    "jsdom": "^23.2.0",
+    "typescript": "^4.9.3",
+    "vitest": "^1.2.0"
   },
   "eslintConfig": {
     "extends": "@yuusheng"

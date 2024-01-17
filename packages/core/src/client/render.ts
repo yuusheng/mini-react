@@ -10,12 +10,13 @@ export function render(element: ReactElement, container: (HTMLElement | Text)) {
   const isProperty = (key: string) => key !== 'children'
   Object.keys(element.props)
     .filter(isProperty)
-    .forEach((name) => { 
+    .forEach((name) => {
       dom[name] = element.props[name]
     })
 
   element.props.children.forEach(child => render(child, dom))
   container.appendChild(dom)
+
   // nextUnitOfWork = {
   //   dom: container as HTMLElement,
   //   props: {
@@ -48,7 +49,7 @@ function workLoop(deadline: IdleDeadline) {
   requestIdleCallback(workLoop)
 }
 
-requestIdleCallback(workLoop)
+// requestIdleCallback(workLoop)
 
 function performUnitOfWork(fiber: Fiber) {
   if (!fiber.dom)

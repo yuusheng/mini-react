@@ -16,5 +16,5 @@
     "noEmit": true,
     "jsx": "preserve",
   },
-  "include": ["packages/**/*", "playground/*"],
+  "include": ["packages/**/*", "playground/*", "test"],
 }
