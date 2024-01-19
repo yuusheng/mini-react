@@ -1,5 +1,5 @@
-import App from './App'
 import React from 'mini-react'
+import App from './App'
 
 const container = document.querySelector('#root') as HTMLElement
 

@@ -1,7 +1,14 @@
 import React from 'mini-react'
 
 function App() {
-  return <h1>Hello React</h1>
+  return (
+    <div>
+      <h1>Hello React</h1>
+      <span>
+        <i>hello</i>
+      </span>
+    </div>
+  )
 }
 
 export default App
