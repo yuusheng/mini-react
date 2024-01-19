@@ -1,28 +1,15 @@
 import type { Fiber, ReactElement } from '../types'
 
-let nextUnitOfWork: Fiber
+let nextUnitOfWork: Fiber | undefined
 
 export function render(element: ReactElement, container: (HTMLElement | Text)) {
-  const dom = element.type !== 'TEXT_ELEMENT'
-    ? document.createElement(element.type)
-    : document.createTextNode('')
-
-  const isProperty = (key: string) => key !== 'children'
-  Object.keys(element.props)
-    .filter(isProperty)
-    .forEach((name) => {
-      dom[name] = element.props[name]
-    })
-
-  element.props.children.forEach(child => render(child, dom))
-  container.appendChild(dom)
-
-  // nextUnitOfWork = {
-  //   dom: container as HTMLElement,
-  //   props: {
-  //     children: [element],
-  //   },
-  // }
+  nextUnitOfWork = {
+    dom: container as HTMLElement,
+    props: {
+      children: [element],
+    },
+  }
+  requestIdleCallback(workLoop)
 }
 
 function createDom(fiber: any) {
@@ -46,17 +33,15 @@ function workLoop(deadline: IdleDeadline) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork)
     shouldYield = deadline.timeRemaining() < 1
   }
-  requestIdleCallback(workLoop)
+  nextUnitOfWork && requestIdleCallback(workLoop)
 }
-
-// requestIdleCallback(workLoop)
 
 function performUnitOfWork(fiber: Fiber) {
   if (!fiber.dom)
     fiber.dom = createDom(fiber)
 
   if (fiber.parent)
-    fiber.parent.dom.appendChild(fiber.dom)
+    fiber.parent.dom!.appendChild(fiber.dom!)
 
   const elements = fiber.props.children
   let index = 0
@@ -65,20 +50,20 @@ function performUnitOfWork(fiber: Fiber) {
   while (index < elements.length) {
     const element = elements[index]
 
-    const newFiber = {
+    const newFiber: Fiber = {
       type: element.type,
       props: element.props,
       parent: fiber,
-      dom: null,
     }
 
     if (index === 0)
       fiber.child = newFiber
     else
-      prevSibling.sibling = newFiber
+      prevSibling!.sibling = newFiber
 
     prevSibling = newFiber
     index++
   }
-  return fiber
+
+  return fiber.child ?? fiber.sibling ?? fiber.parent?.sibling
 }
