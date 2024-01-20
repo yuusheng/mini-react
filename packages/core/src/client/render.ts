@@ -12,18 +12,17 @@ export function render(element: ReactElement, container: (HTMLElement | Text)) {
   requestIdleCallback(workLoop)
 }
 
-function createDom(fiber: any) {
+function createDom(fiber: Fiber) {
   const dom = fiber.type !== 'TEXT_ELEMENT'
-    ? document.createElement(fiber.type)
+    ? document.createElement(fiber.type!)
     : document.createTextNode('')
 
   const isProperty = (key: string) => key !== 'children'
-  Object.keys(fiber.props)
-    .filter(isProperty)
-    .forEach((name) => {
-      dom[name] = fiber.props[name]
-    })
-
+  const props = Object.fromEntries(
+    Object.entries(fiber.props)
+      .filter(([k]) => isProperty(k)),
+  )
+  Object.assign(dom, props)
   return dom
 }
 
@@ -44,10 +43,9 @@ function performUnitOfWork(fiber: Fiber) {
     fiber.parent.dom!.appendChild(fiber.dom!)
 
   const elements = fiber.props.children
-  let index = 0
-  let prevSibling: Fiber
+  let prevFiber: Fiber
 
-  while (index < elements.length) {
+  for (const index in elements) {
     const element = elements[index]
 
     const newFiber: Fiber = {
@@ -56,13 +54,12 @@ function performUnitOfWork(fiber: Fiber) {
       parent: fiber,
     }
 
-    if (index === 0)
+    if (index === '0')
       fiber.child = newFiber
     else
-      prevSibling!.sibling = newFiber
+      prevFiber!.sibling = newFiber
 
-    prevSibling = newFiber
-    index++
+    prevFiber = newFiber
   }
 
   return fiber.child ?? fiber.sibling ?? fiber.parent?.sibling
