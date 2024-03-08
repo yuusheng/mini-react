@@ -1,7 +1,8 @@
 import type { Fiber, ReactElement } from '../types'
+import { isFunction } from '../utils'
 
 let nextUnitOfWork: Fiber | undefined
-
+let root: Fiber | null
 export function render(element: ReactElement, container: (HTMLElement | Text)) {
   nextUnitOfWork = {
     dom: container as HTMLElement,
@@ -10,9 +11,13 @@ export function render(element: ReactElement, container: (HTMLElement | Text)) {
     },
   }
   requestIdleCallback(workLoop)
+  root = nextUnitOfWork
 }
 
 function createDom(fiber: Fiber) {
+  if (isFunction(fiber.type))
+    return
+
   const dom = fiber.type !== 'TEXT_ELEMENT'
     ? document.createElement(fiber.type!)
     : document.createTextNode('')
@@ -32,15 +37,29 @@ function workLoop(deadline: IdleDeadline) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork)
     shouldYield = deadline.timeRemaining() < 1
   }
+
+  if (!nextUnitOfWork)
+    unifyCommit()
+
   nextUnitOfWork && requestIdleCallback(workLoop)
+}
+
+function unifyCommit() {
+  commitWork(root?.child)
+  root = null
+}
+
+function commitWork(fiber?: Fiber) {
+  if (!fiber)
+    return
+  fiber.parent?.dom?.appendChild(fiber.dom!)
+  commitWork(fiber.child)
+  commitWork(fiber.sibling)
 }
 
 function performUnitOfWork(fiber: Fiber) {
   if (!fiber.dom)
     fiber.dom = createDom(fiber)
-
-  if (fiber.parent)
-    fiber.parent.dom!.appendChild(fiber.dom!)
 
   const elements = fiber.props.children
   let prevFiber: Fiber

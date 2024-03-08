@@ -1,15 +1,12 @@
 import { createElement, render } from './client'
-import type { JSXTransformedElement, ReactElement } from './types'
+import type { ReactElement } from './types'
 
 const React = {
   createElement,
   createRoot(root: HTMLElement) {
     return {
-      render(component: JSXTransformedElement) {
-        const _component = typeof component.type === 'function'
-          ? component.type()
-          : component as ReactElement
-        render(_component, root)
+      render(component: ReactElement) {
+        render(component, root)
       },
     }
   },
