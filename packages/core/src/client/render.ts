@@ -70,7 +70,7 @@ function performUnitOfWork(fiber: Fiber) {
   if (!fiber.dom || isFunctionComponent)
     fiber.dom = createDom(fiber)
 
-  const elements = isFunction(fiber.type) ? [fiber.type()] : fiber.props.children
+  const elements = isFunction(fiber.type) ? [fiber.type(fiber.props)] : fiber.props.children
   let prevFiber: Fiber
 
   for (const index in elements) {

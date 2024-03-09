@@ -7,13 +7,14 @@ function App() {
       <span>
         <i>hello</i>
       </span>
-      <Counter />
+      <Counter num={1}/>
+      <Counter num={2}/>
     </div>
   )
 }
 
-function Counter() {
-  return <div>Counter</div>
+function Counter({ num }: { num: number }) {
+  return <div>Counter: {num}</div>
 }
 
 export default App
