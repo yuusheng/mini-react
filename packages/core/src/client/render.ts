@@ -45,6 +45,7 @@ function workLoop(deadline: IdleDeadline) {
 }
 
 function unifyCommit() {
+  console.log(root)
   commitWork(root?.child)
   root = null
 }
@@ -52,16 +53,24 @@ function unifyCommit() {
 function commitWork(fiber?: Fiber) {
   if (!fiber)
     return
-  fiber.parent?.dom?.appendChild(fiber.dom!)
+
+  let fiberParent = fiber.parent as Fiber
+  while (!fiberParent.dom)
+    fiberParent = fiberParent.parent
+
+  if (fiber.dom)
+    fiberParent.dom.appendChild(fiber.dom)
   commitWork(fiber.child)
   commitWork(fiber.sibling)
 }
 
 function performUnitOfWork(fiber: Fiber) {
-  if (!fiber.dom)
+  const isFunctionComponent = isFunction(fiber.type)
+
+  if (!fiber.dom || isFunctionComponent)
     fiber.dom = createDom(fiber)
 
-  const elements = fiber.props.children
+  const elements = isFunction(fiber.type) ? [fiber.type()] : fiber.props.children
   let prevFiber: Fiber
 
   for (const index in elements) {
@@ -81,5 +90,15 @@ function performUnitOfWork(fiber: Fiber) {
     prevFiber = newFiber
   }
 
-  return fiber.child ?? fiber.sibling ?? fiber.parent?.sibling
+  if (fiber.child)
+    return fiber.child
+  if (fiber.sibling)
+    return fiber.sibling
+
+  let nextUnitOfWork = fiber.parent
+  while (nextUnitOfWork?.parent) {
+    if (nextUnitOfWork.sibling)
+      return nextUnitOfWork.sibling
+    nextUnitOfWork = nextUnitOfWork?.parent
+  }
 }

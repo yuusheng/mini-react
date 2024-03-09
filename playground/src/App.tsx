@@ -10,6 +10,16 @@ import React from 'mini-react'
 //     </div>
 //   )
 // }
-const App = <div>hello react</div>
+function Counter() {
+  return <div>Counter</div>
+}
 
+const App = (
+  <div>
+    hello react
+    <Counter />
+    1234
+    <Counter />
+  </div>
+)
 export default App
