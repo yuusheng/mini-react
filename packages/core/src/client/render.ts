@@ -25,11 +25,22 @@ function createDom(fiber: Fiber) {
     : document.createTextNode('')
 
   const isProperty = (key: string) => key !== 'children'
-  const props = Object.fromEntries(
-    Object.entries(fiber.props)
-      .filter(([k]) => isProperty(k)),
-  )
-  Object.assign(dom, props)
+  const isEvent = (key: string) => key.startsWith('on')
+  for (const [k, v] of Object.entries(fiber.props)) {
+    if (!isProperty(k))
+      continue
+
+    if (isEvent(k)) {
+      const event = k.slice(2).toLowerCase()
+      assertFunction(v)
+      dom.addEventListener(event, (e: any) => v(e))
+      continue
+    }
+
+    // @ts-expect-error expect k as keyof dom
+    dom[k] = v
+  }
+
   return dom
 }
 

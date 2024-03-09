@@ -7,14 +7,22 @@ function App() {
       <span>
         <i>hello</i>
       </span>
-      <Counter num={1}/>
-      <Counter num={2}/>
+      <Counter num={1} />
     </div>
   )
 }
 
 function Counter({ num }: { num: number }) {
-  return <div>Counter: {num}</div>
+  function handleClick() {
+    console.log('click')
+  }
+
+  return (
+    <div>
+      Counter: {num}
+      <button onClick={handleClick}>click</button>
+    </div>
+  )
 }
 
 export default App
