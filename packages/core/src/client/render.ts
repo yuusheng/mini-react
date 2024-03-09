@@ -1,5 +1,5 @@
 import type { Fiber, ReactElement } from '../types'
-import { isFunction } from '../utils'
+import { assertFunction, assertString, isFunction } from '../utils'
 
 let nextUnitOfWork: Fiber | undefined
 let root: Fiber | null
@@ -15,11 +15,13 @@ export function render(element: ReactElement, container: (HTMLElement | Text)) {
 }
 
 function createDom(fiber: Fiber) {
-  if (isFunction(fiber.type))
-    return
+  if (fiber.dom)
+    return fiber.dom
+
+  assertString(fiber.type)
 
   const dom = fiber.type !== 'TEXT_ELEMENT'
-    ? document.createElement(fiber.type!)
+    ? document.createElement(fiber.type)
     : document.createTextNode('')
 
   const isProperty = (key: string) => key !== 'children'
@@ -52,16 +54,32 @@ function unifyCommit() {
 function commitWork(fiber?: Fiber) {
   if (!fiber)
     return
-  fiber.parent?.dom?.appendChild(fiber.dom!)
+
+  let fiberParent = fiber.parent as Fiber
+  while (!fiberParent.dom)
+    fiberParent = fiberParent.parent
+
+  if (fiber.dom)
+    fiberParent.dom.appendChild(fiber.dom)
   commitWork(fiber.child)
   commitWork(fiber.sibling)
 }
 
-function performUnitOfWork(fiber: Fiber) {
-  if (!fiber.dom)
-    fiber.dom = createDom(fiber)
+function updateFunctionComponentFiber(fiber: Fiber) {
+  assertFunction(fiber.type)
+
+  const elements = [fiber.type(fiber.props)]
+  updateFiber(fiber, elements)
+}
+
+function updateNormalComponentFiber(fiber: Fiber) {
+  fiber.dom = createDom(fiber)
 
   const elements = fiber.props.children
+  updateFiber(fiber, elements)
+}
+
+function updateFiber(fiber: Fiber, elements: ReactElement[]) {
   let prevFiber: Fiber
 
   for (const index in elements) {
@@ -80,6 +98,25 @@ function performUnitOfWork(fiber: Fiber) {
 
     prevFiber = newFiber
   }
+}
 
-  return fiber.child ?? fiber.sibling ?? fiber.parent?.sibling
+function performUnitOfWork(fiber: Fiber) {
+  const isFunctionComponent = isFunction(fiber.type)
+
+  if (isFunctionComponent)
+    updateFunctionComponentFiber(fiber)
+  else
+    updateNormalComponentFiber(fiber)
+
+  if (fiber.child)
+    return fiber.child
+  if (fiber.sibling)
+    return fiber.sibling
+
+  let nextUnitOfWork = fiber.parent
+  while (nextUnitOfWork?.parent) {
+    if (nextUnitOfWork.sibling)
+      return nextUnitOfWork.sibling
+    nextUnitOfWork = nextUnitOfWork?.parent
+  }
 }
