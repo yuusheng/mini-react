@@ -9,9 +9,10 @@
       "types": "./src/index.ts"
     }
   },
-  "scripts": {
-
-  },
+  "scripts": {},
   "keywords": [],
-  "author": "yuusheng <hi@yuusheng.im>"
+  "author": "yuusheng <hi@yuusheng.im>",
+  "dependencies": {
+    "zod": "^3.22.4"
+  }
 }

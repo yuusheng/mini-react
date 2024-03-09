@@ -17,7 +17,7 @@ export interface JSXTransformedElement {
 }
 
 export interface Fiber {
-  type?: string | ((...props: unknown[]) => Fiber)
+  type?: string | ((...props: unknown[]) => ReactElement)
   dom?: HTMLElement | Text
   props: {
     children: ReactElement[]

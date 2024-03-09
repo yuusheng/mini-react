@@ -1,5 +1,5 @@
 import type { Fiber, ReactElement } from '../types'
-import { isFunction } from '../utils'
+import { assertFunction, assertString, isFunction } from '../utils'
 
 let nextUnitOfWork: Fiber | undefined
 let root: Fiber | null
@@ -15,11 +15,13 @@ export function render(element: ReactElement, container: (HTMLElement | Text)) {
 }
 
 function createDom(fiber: Fiber) {
-  if (isFunction(fiber.type))
-    return
+  if (fiber.dom)
+    return fiber.dom
+
+  assertString(fiber.type)
 
   const dom = fiber.type !== 'TEXT_ELEMENT'
-    ? document.createElement(fiber.type!)
+    ? document.createElement(fiber.type)
     : document.createTextNode('')
 
   const isProperty = (key: string) => key !== 'children'
@@ -45,7 +47,6 @@ function workLoop(deadline: IdleDeadline) {
 }
 
 function unifyCommit() {
-  console.log(root)
   commitWork(root?.child)
   root = null
 }
@@ -64,13 +65,21 @@ function commitWork(fiber?: Fiber) {
   commitWork(fiber.sibling)
 }
 
-function performUnitOfWork(fiber: Fiber) {
-  const isFunctionComponent = isFunction(fiber.type)
+function updateFunctionComponentFiber(fiber: Fiber) {
+  assertFunction(fiber.type)
 
-  if (!fiber.dom || isFunctionComponent)
-    fiber.dom = createDom(fiber)
+  const elements = [fiber.type(fiber.props)]
+  updateFiber(fiber, elements)
+}
 
-  const elements = isFunction(fiber.type) ? [fiber.type(fiber.props)] : fiber.props.children
+function updateNormalComponentFiber(fiber: Fiber) {
+  fiber.dom = createDom(fiber)
+
+  const elements = fiber.props.children
+  updateFiber(fiber, elements)
+}
+
+function updateFiber(fiber: Fiber, elements: ReactElement[]) {
   let prevFiber: Fiber
 
   for (const index in elements) {
@@ -89,6 +98,15 @@ function performUnitOfWork(fiber: Fiber) {
 
     prevFiber = newFiber
   }
+}
+
+function performUnitOfWork(fiber: Fiber) {
+  const isFunctionComponent = isFunction(fiber.type)
+
+  if (isFunctionComponent)
+    updateFunctionComponentFiber(fiber)
+  else
+    updateNormalComponentFiber(fiber)
 
   if (fiber.child)
     return fiber.child
