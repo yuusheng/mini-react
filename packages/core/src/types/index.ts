@@ -21,6 +21,7 @@ export interface Fiber {
   dom?: HTMLElement | Text
   props: {
     children: ReactElement[]
+    [key: string]: unknown
   }
   parent?: Fiber
   child?: Fiber
