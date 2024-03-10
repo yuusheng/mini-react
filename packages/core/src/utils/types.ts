@@ -9,6 +9,7 @@ export function assertString(maybeString: unknown): asserts maybeString is Strin
 }
 
 export function assertExist(maybeExist: unknown): asserts maybeExist {
-  if (!maybeExist)
+  if (!maybeExist) {
     throw new Error(`${maybeExist} cannot be empty!`)
+  }
 }

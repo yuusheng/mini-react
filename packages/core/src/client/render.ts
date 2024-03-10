@@ -2,12 +2,13 @@ import type { Fiber, FiberNodeDOM, ReactElement, VirtualElementProps } from '../
 
 import { assertExist, assertString } from '../utils'
 
-let nextUnitOfWork: Fiber | undefined
+let nextUnitOfWork: Fiber | null
 let wipRoot: Fiber | null = null
 let currentRoot: Fiber
 
 export function render(element: ReactElement, container: FiberNodeDOM) {
   wipRoot = {
+    type: 'div',
     dom: container,
     props: {
       children: [element],
@@ -21,6 +22,7 @@ export function update() {
   assertExist(currentRoot)
 
   wipRoot = {
+    type: 'div',
     dom: currentRoot.dom,
     props: currentRoot.props,
     alternate: currentRoot,
@@ -225,4 +227,6 @@ function performUnitOfWork(fiber: Fiber) {
 
     nextFiber = nextFiber?.parent
   }
+
+  return null
 }
