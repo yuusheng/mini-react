@@ -2,13 +2,13 @@ import type { Fiber, FiberNodeDOM, ReactElement, VirtualElementProps } from '../
 
 import { assertExist, assertString } from '../utils'
 
-let nextUnitOfWork: Fiber
+let nextUnitOfWork: Fiber | undefined
 let wipRoot: Fiber | null = null
 let currentRoot: Fiber
 
-export function render(element: ReactElement, container: (HTMLElement | Text)) {
+export function render(element: ReactElement, container: FiberNodeDOM) {
   wipRoot = {
-    dom: container as HTMLElement,
+    dom: container,
     props: {
       children: [element],
     },

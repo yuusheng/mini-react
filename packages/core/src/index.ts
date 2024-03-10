@@ -1,9 +1,9 @@
 import { createElement, render, update } from './client'
-import type { ReactElement } from './types'
+import type { FiberNodeDOM, ReactElement } from './types'
 
 const React = {
   createElement,
-  createRoot(root: HTMLElement) {
+  createRoot(root: FiberNodeDOM) {
     return {
       render(component: ReactElement) {
         render(component, root)
