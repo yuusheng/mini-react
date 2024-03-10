@@ -4,8 +4,8 @@ import { assertExist, assertString } from '../utils'
 
 let nextUnitOfWork: Fiber | null
 let wipRoot: Fiber | null = null
-let currentRoot: Fiber
 const deletions: Fiber[] = []
+let wipFiber: Fiber | null = null
 
 export function render(element: ReactElement, container: FiberNodeDOM) {
   wipRoot = {
@@ -20,17 +20,17 @@ export function render(element: ReactElement, container: FiberNodeDOM) {
 }
 
 export function update() {
-  assertExist(currentRoot)
-
-  wipRoot = {
-    type: 'div',
-    dom: currentRoot.dom,
-    props: currentRoot.props,
-    alternate: currentRoot,
+  const currentFiber = wipFiber
+  return () => {
+    assertExist(currentFiber)
+    wipRoot = {
+      ...currentFiber,
+      alternate: currentFiber,
+    }
+    nextUnitOfWork = wipRoot
+    requestIdleCallback(workLoop)
+    deletions.length = 0
   }
-  nextUnitOfWork = wipRoot
-  requestIdleCallback(workLoop)
-  deletions.length = 0
 }
 
 function updateDOM(
@@ -85,6 +85,9 @@ function workLoop(deadline: IdleDeadline) {
   let shouldYield = false
   while (nextUnitOfWork && !shouldYield) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork)
+    if (nextUnitOfWork?.type === wipRoot?.sibling?.type) {
+      nextUnitOfWork = null
+    }
     shouldYield = deadline.timeRemaining() < 1
   }
 
@@ -160,7 +163,6 @@ function commitRoot() {
   }
 
   commitWork(wipRoot.child)
-  currentRoot = wipRoot
   wipRoot = null
 }
 
@@ -225,6 +227,7 @@ function performUnitOfWork(fiber: Fiber) {
       break
 
     case 'function':
+      wipFiber = fiber
       reconcileChildren(fiber, [fiber.type(fiber.props)])
       break
 
