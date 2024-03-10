@@ -1,4 +1,4 @@
-import { createElement, render } from './client'
+import { createElement, render, update } from './client'
 import type { ReactElement } from './types'
 
 const React = {
@@ -10,6 +10,7 @@ const React = {
       },
     }
   },
+  update,
 }
 
 export * from './client'

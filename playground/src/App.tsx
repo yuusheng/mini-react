@@ -1,4 +1,5 @@
 import React from 'mini-react'
+let count = 1
 
 function App() {
   return (
@@ -7,19 +8,22 @@ function App() {
       <span>
         <i>hello</i>
       </span>
-      <Counter num={1} />
+      <Counter />
     </div>
   )
 }
 
-function Counter({ num }: { num: number }) {
+function Counter() {
   function handleClick() {
+    React.update()
+
+    count++
     console.log('click')
   }
 
   return (
     <div>
-      Counter: {num}
+      Counter: {count}
       <button onClick={handleClick}>click</button>
     </div>
   )
