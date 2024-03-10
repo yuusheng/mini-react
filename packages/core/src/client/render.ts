@@ -33,6 +33,44 @@ export function update() {
   }
 }
 
+interface StateHook<T = unknown> {
+  state: T
+  queue: ((arg?: any) => T)[]
+}
+
+let stateHooks: StateHook[]
+let stateHookIndex: number
+export function useState<T = unknown>(initial: T) {
+  const currentFiber = wipFiber
+  assertExist(currentFiber)
+  const oldStateHook = currentFiber?.alternate?.$$stateHooks?.[stateHookIndex] as StateHook<T> | undefined
+
+  const stateHook: StateHook<T> = {
+    state: oldStateHook?.state ?? initial,
+    queue: oldStateHook?.queue ?? [],
+  }
+  stateHooks.push(stateHook)
+  currentFiber.$$stateHooks = stateHooks
+  stateHookIndex++
+
+  const setState = (action: ((prevState: T) => T) | T) => {
+    const updater = typeof action === 'function'
+      ? action as (state: T) => T
+      : () => action
+
+    stateHook.state = updater(stateHook.state)
+
+    wipRoot = {
+      ...currentFiber,
+      alternate: currentFiber,
+    }
+    nextUnitOfWork = wipRoot
+    requestIdleCallback(workLoop)
+    deletions.length = 0
+  }
+  return [stateHook.state, setState] as const
+}
+
 function updateDOM(
   DOM: NonNullable<FiberNodeDOM>,
   prevProps: VirtualElementProps,
@@ -157,12 +195,11 @@ function commitRoot() {
     }
   }
 
-  assertExist(wipRoot)
   for (const deletion of deletions) {
     commitDeletion(deletion)
   }
 
-  commitWork(wipRoot.child)
+  commitWork(wipRoot?.child)
   wipRoot = null
 }
 
@@ -228,6 +265,8 @@ function performUnitOfWork(fiber: Fiber) {
 
     case 'function':
       wipFiber = fiber
+      stateHooks = []
+      stateHookIndex = 0
       reconcileChildren(fiber, [fiber.type(fiber.props)])
       break
 

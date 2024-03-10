@@ -1,4 +1,4 @@
-import { createElement, render, update } from './client'
+import { createElement, render, update, useState } from './client'
 import type { FiberNodeDOM, ReactElement } from './types'
 
 const React = {
@@ -11,6 +11,7 @@ const React = {
     }
   },
   update,
+  useState,
 }
 
 export * from './client'

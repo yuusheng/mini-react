@@ -35,4 +35,5 @@ export interface Fiber extends JSXTransformedElement {
   sibling?: Fiber
   alternate?: Fiber
   effectTag?: 'UPDATE' | 'REPLACEMENT'
+  $$stateHooks?: unknown[]
 }
