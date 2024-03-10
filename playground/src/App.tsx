@@ -1,6 +1,6 @@
 import React from 'mini-react'
 
-let count = 1
+const count = 1
 let fooValue = true
 
 function App() {
@@ -15,21 +15,43 @@ function App() {
   )
 }
 
-function Counter() {
+function Foo() {
+  const update = React.update()
   function handleClick() {
-    React.update()
-
-    count++
-    console.log('click')
+    console.log('click foo')
+    update()
   }
+  console.log('rerender foo')
 
+  return (
+    <div>
+      <div>foo</div>
+      <button onClick={handleClick}>click foo</button>
+    </div>
+  )
+}
+
+function Bar() {
+  const update = React.update()
+  function handleClick() {
+    console.log('click bar')
+    update()
+  }
+  console.log('rerender bar')
+
+  return (
+    <div>
+      <div>bar</div>
+      <button onClick={handleClick}>click bar</button>
+    </div>
+  )
+}
+
+function Counter() {
   function toggleFooBar() {
     React.update()
     fooValue = !fooValue
   }
-
-  const Foo = () => <div>foo</div>
-  const bar = <p>bar</p>
 
   return (
     <div>
@@ -38,8 +60,9 @@ function Counter() {
 
       <button onClick={toggleFooBar}>toggle</button>
       <span>
-        <div>{ fooValue ? <Foo /> : bar }</div>
-        <span>wooo</span>
+        {/* <div>{fooValue ? <Foo /> : <Bar />}</div> */}
+        <Foo />
+        <Bar />
       </span>
     </div>
   )
