@@ -127,11 +127,11 @@ function commitWork(fiber?: Fiber) {
       const parentFiber = findParentFiber(fiber)
 
       switch (fiber.effectTag) {
-        case 'UPDATE':
+        case 'REPLACEMENT':
           commitReplacement(parentFiber?.dom, fiber.dom)
           break
 
-        case 'REPLACEMENT':
+        case 'UPDATE':
           updateDOM(fiber.dom, fiber.alternate?.props ?? {}, fiber.props)
           break
 
@@ -161,7 +161,7 @@ function reconcileChildren(fiber: Fiber, virtualElements: ReactElement[] = []) {
         alternate: oldFiber,
         props: virtualElement.props,
         parent: fiber,
-        effectTag: 'REPLACEMENT',
+        effectTag: 'UPDATE',
       }
     }
 
@@ -171,7 +171,7 @@ function reconcileChildren(fiber: Fiber, virtualElements: ReactElement[] = []) {
         dom: null,
         props: virtualElement.props,
         parent: fiber,
-        effectTag: 'UPDATE',
+        effectTag: 'REPLACEMENT',
       }
     }
 
