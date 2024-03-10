@@ -28,12 +28,15 @@ export interface JSXTransformedElement {
   }
 }
 
-export interface Fiber extends JSXTransformedElement {
+export interface Fiber<T = any> extends JSXTransformedElement {
   dom?: FiberNodeDOM
   parent?: Fiber
   child?: Fiber
   sibling?: Fiber
-  alternate?: Fiber
+  alternate?: Fiber<T> | null
   effectTag?: 'UPDATE' | 'REPLACEMENT'
-  $$stateHooks?: unknown[]
+  hooks?: {
+    state: T
+    queue: ((args: any) => T)[]
+  }[]
 }

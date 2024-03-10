@@ -6,6 +6,8 @@ function Foo() {
   function handleClick() {
     console.log('click foo')
     setCount(count + 1)
+    setCount(count => count + 1)
+
     setFoo(foo => `${foo}foo`)
   }
   console.log('rerender foo')

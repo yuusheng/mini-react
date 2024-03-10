@@ -6,6 +6,7 @@ let nextUnitOfWork: Fiber | null
 let wipRoot: Fiber | null = null
 const deletions: Fiber[] = []
 let wipFiber: Fiber | null = null
+let hookIndex: number
 
 export function render(element: ReactElement, container: FiberNodeDOM) {
   wipRoot = {
@@ -19,56 +20,47 @@ export function render(element: ReactElement, container: FiberNodeDOM) {
   requestIdleCallback(workLoop)
 }
 
-export function update() {
-  const currentFiber = wipFiber
-  return () => {
-    assertExist(currentFiber)
-    wipRoot = {
-      ...currentFiber,
-      alternate: currentFiber,
-    }
-    nextUnitOfWork = wipRoot
-    requestIdleCallback(workLoop)
-    deletions.length = 0
-  }
-}
-
-interface StateHook<T = unknown> {
-  state: T
-  queue: ((arg?: any) => T)[]
-}
-
-let stateHooks: StateHook[]
-let stateHookIndex: number
 export function useState<T = unknown>(initial: T) {
-  const currentFiber = wipFiber
-  assertExist(currentFiber)
-  const oldStateHook = currentFiber?.alternate?.$$stateHooks?.[stateHookIndex] as StateHook<T> | undefined
+  const fiber = wipFiber
+  assertExist(fiber)
 
-  const stateHook: StateHook<T> = {
-    state: oldStateHook?.state ?? initial,
-    queue: oldStateHook?.queue ?? [],
+  const hook = fiber.alternate?.hooks
+    ? fiber.alternate?.hooks?.[hookIndex]
+    : {
+        state: initial,
+        queue: [],
+      }
+
+  while (hook.queue.length) {
+    const updater = hook.queue.shift()
+    const newState = updater?.(hook.state)
+    if (newState) {
+      hook.state = newState
+    }
   }
-  stateHooks.push(stateHook)
-  currentFiber.$$stateHooks = stateHooks
-  stateHookIndex++
+
+  if (!fiber.hooks) {
+    fiber.hooks = []
+  }
+  fiber.hooks.push(hook)
+  hookIndex++
 
   const setState = (action: ((prevState: T) => T) | T) => {
-    const updater = typeof action === 'function'
-      ? action as (state: T) => T
-      : () => action
-
-    stateHook.state = updater(stateHook.state)
+    hook.queue.push(
+      typeof action === 'function'
+        ? action as (state: T) => T
+        : () => action,
+    )
 
     wipRoot = {
-      ...currentFiber,
-      alternate: currentFiber,
+      ...fiber,
+      alternate: fiber,
     }
     nextUnitOfWork = wipRoot
     requestIdleCallback(workLoop)
     deletions.length = 0
   }
-  return [stateHook.state, setState] as const
+  return [hook.state, setState] as const
 }
 
 function updateDOM(
@@ -265,8 +257,8 @@ function performUnitOfWork(fiber: Fiber) {
 
     case 'function':
       wipFiber = fiber
-      stateHooks = []
-      stateHookIndex = 0
+      wipFiber.hooks = []
+      hookIndex = 0
       reconcileChildren(fiber, [fiber.type(fiber.props)])
       break
 
