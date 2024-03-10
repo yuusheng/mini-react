@@ -20,12 +20,12 @@ export function render(element: ReactElement, container: FiberNodeDOM) {
 export function update() {
   assertExist(currentRoot)
 
-  nextUnitOfWork = {
+  wipRoot = {
     dom: currentRoot.dom,
     props: currentRoot.props,
     alternate: currentRoot,
   }
-  wipRoot = nextUnitOfWork
+  nextUnitOfWork = wipRoot
   requestIdleCallback(workLoop)
 }
 
