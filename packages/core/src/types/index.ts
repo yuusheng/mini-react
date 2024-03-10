@@ -21,20 +21,15 @@ export interface ReactElement {
 }
 
 export interface JSXTransformedElement {
-  type: NODE_TYPE | (() => ReactElement)
+  type: NODE_TYPE | ((...props: unknown[]) => ReactElement)
   props: {
     [key: string]: any
     children: ReactElement[]
   }
 }
 
-export interface Fiber {
-  type?: string | ((...props: unknown[]) => ReactElement)
+export interface Fiber extends JSXTransformedElement {
   dom?: FiberNodeDOM
-  props: {
-    children: ReactElement[]
-    [key: string]: unknown
-  }
   parent?: Fiber
   child?: Fiber
   sibling?: Fiber
