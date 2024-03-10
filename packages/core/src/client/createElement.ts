@@ -6,10 +6,15 @@ export function createElement(type: NODE_TYPE, props?: any, ...children: any[]) 
     type,
     props: {
       ...props,
-      children: children?.map(child =>
-        isObject(child)
+      children: children?.map((child) => {
+        // if (!child) {
+        //   return child
+        // }
+
+        return isObject(child)
           ? child
-          : createTextElement(child),
+          : createTextElement(child)
+      },
       ),
     },
   } as ReactElement

@@ -5,6 +5,7 @@ import { assertExist, assertString } from '../utils'
 let nextUnitOfWork: Fiber | null
 let wipRoot: Fiber | null = null
 let currentRoot: Fiber
+const deletions: Fiber[] = []
 
 export function render(element: ReactElement, container: FiberNodeDOM) {
   wipRoot = {
@@ -14,8 +15,8 @@ export function render(element: ReactElement, container: FiberNodeDOM) {
       children: [element],
     },
   }
-  requestIdleCallback(workLoop)
   nextUnitOfWork = wipRoot
+  requestIdleCallback(workLoop)
 }
 
 export function update() {
@@ -29,6 +30,7 @@ export function update() {
   }
   nextUnitOfWork = wipRoot
   requestIdleCallback(workLoop)
+  deletions.length = 0
 }
 
 function updateDOM(
@@ -94,14 +96,6 @@ function workLoop(deadline: IdleDeadline) {
 }
 
 function commitRoot() {
-  assertExist(wipRoot)
-
-  commitWork(wipRoot.child)
-  currentRoot = wipRoot
-  wipRoot = null
-}
-
-function commitWork(fiber?: Fiber) {
   const findParentFiber = (fiber?: Fiber) => {
     if (fiber) {
       let parentFiber = fiber.parent
@@ -114,7 +108,6 @@ function commitWork(fiber?: Fiber) {
 
     return null
   }
-
   const commitReplacement = (
     parentDOM: FiberNodeDOM,
     DOM: NonNullable<FiberNodeDOM>,
@@ -124,27 +117,51 @@ function commitWork(fiber?: Fiber) {
     }
   }
 
-  if (fiber) {
-    if (fiber.dom) {
-      const parentFiber = findParentFiber(fiber)
-
-      switch (fiber.effectTag) {
-        case 'REPLACEMENT':
-          commitReplacement(parentFiber?.dom, fiber.dom)
-          break
-
-        case 'UPDATE':
-          updateDOM(fiber.dom, fiber.alternate?.props ?? {}, fiber.props)
-          break
-
-        default:
-          break
-      }
+  const commitDeletion = (deletion?: Fiber) => {
+    if (!deletion) {
+      return
     }
 
-    commitWork(fiber.child)
-    commitWork(fiber.sibling)
+    if (deletion.dom) {
+      const parentFiber = findParentFiber(deletion)
+      parentFiber?.dom?.removeChild(deletion.dom)
+    } else {
+      commitDeletion(deletion.child)
+    }
   }
+
+  const commitWork = (fiber?: Fiber) => {
+    if (fiber) {
+      if (fiber.dom) {
+        const parentFiber = findParentFiber(fiber)
+
+        switch (fiber.effectTag) {
+          case 'REPLACEMENT':
+            commitReplacement(parentFiber?.dom, fiber.dom)
+            break
+
+          case 'UPDATE':
+            updateDOM(fiber.dom, fiber.alternate?.props ?? {}, fiber.props)
+            break
+
+          default:
+            break
+        }
+      }
+
+      commitWork(fiber.child)
+      commitWork(fiber.sibling)
+    }
+  }
+
+  assertExist(wipRoot)
+  for (const deletion of deletions) {
+    commitDeletion(deletion)
+  }
+
+  commitWork(wipRoot.child)
+  currentRoot = wipRoot
+  wipRoot = null
 }
 
 function reconcileChildren(fiber: Fiber, virtualElements: ReactElement[] = []) {
@@ -174,6 +191,10 @@ function reconcileChildren(fiber: Fiber, virtualElements: ReactElement[] = []) {
         props: virtualElement.props,
         parent: fiber,
         effectTag: 'REPLACEMENT',
+      }
+
+      if (oldFiber) {
+        deletions.push(oldFiber)
       }
     }
 
