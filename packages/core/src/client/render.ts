@@ -6,6 +6,7 @@ let nextUnitOfWork: Fiber | null
 let wipRoot: Fiber | null = null
 const deletions: Fiber[] = []
 let wipFiber: Fiber | null = null
+let hookIndex: number
 
 export function render(element: ReactElement, container: FiberNodeDOM) {
   wipRoot = {
@@ -19,18 +20,47 @@ export function render(element: ReactElement, container: FiberNodeDOM) {
   requestIdleCallback(workLoop)
 }
 
-export function update() {
-  const currentFiber = wipFiber
-  return () => {
-    assertExist(currentFiber)
+export function useState<T = unknown>(initial: T) {
+  const fiber = wipFiber
+  assertExist(fiber)
+
+  const hook = fiber.alternate?.hooks
+    ? fiber.alternate?.hooks?.[hookIndex]
+    : {
+        state: initial,
+        queue: [],
+      }
+
+  while (hook.queue.length) {
+    const updater = hook.queue.shift()
+    const newState = updater?.(hook.state)
+    if (newState) {
+      hook.state = newState
+    }
+  }
+
+  if (!fiber.hooks) {
+    fiber.hooks = []
+  }
+  fiber.hooks.push(hook)
+  hookIndex++
+
+  const setState = (action: ((prevState: T) => T) | T) => {
+    hook.queue.push(
+      typeof action === 'function'
+        ? action as (state: T) => T
+        : () => action,
+    )
+
     wipRoot = {
-      ...currentFiber,
-      alternate: currentFiber,
+      ...fiber,
+      alternate: fiber,
     }
     nextUnitOfWork = wipRoot
     requestIdleCallback(workLoop)
     deletions.length = 0
   }
+  return [hook.state, setState] as const
 }
 
 function updateDOM(
@@ -157,12 +187,11 @@ function commitRoot() {
     }
   }
 
-  assertExist(wipRoot)
   for (const deletion of deletions) {
     commitDeletion(deletion)
   }
 
-  commitWork(wipRoot.child)
+  commitWork(wipRoot?.child)
   wipRoot = null
 }
 
@@ -228,6 +257,8 @@ function performUnitOfWork(fiber: Fiber) {
 
     case 'function':
       wipFiber = fiber
+      wipFiber.hooks = []
+      hookIndex = 0
       reconcileChildren(fiber, [fiber.type(fiber.props)])
       break
 
