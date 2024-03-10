@@ -21,7 +21,7 @@
     "extends": "@yuusheng",
     "rules": {
       "@typescript-eslint/brace-style": "off",
-      "curly": ["error", "multi-line"]
+      "curly": ["error", "multi-line", "consistent"]
     }
   }
 }
