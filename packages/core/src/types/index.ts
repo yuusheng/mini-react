@@ -28,6 +28,7 @@ export interface JSXTransformedElement {
   }
 }
 
+export type CleanUpFunction = () => void
 export interface Fiber<T = any> extends JSXTransformedElement {
   dom?: FiberNodeDOM
   parent?: Fiber
@@ -38,5 +39,9 @@ export interface Fiber<T = any> extends JSXTransformedElement {
   hooks?: {
     state: T
     queue: ((args: any) => T)[]
+  }[]
+  effectHooks?: {
+    callback: () => CleanUpFunction | void
+    deps: any[]
   }[]
 }

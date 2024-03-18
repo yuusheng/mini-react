@@ -1,4 +1,4 @@
-import type { Fiber, FiberNodeDOM, ReactElement, VirtualElementProps } from '../types'
+import type { CleanUpFunction, Fiber, FiberNodeDOM, ReactElement, VirtualElementProps } from '../types'
 
 import { assertExist, assertString } from '../utils'
 
@@ -63,6 +63,20 @@ export function useState<T = unknown>(initial: T) {
   return [hook.state, setState] as const
 }
 
+export function useEffect(
+  callback: () => CleanUpFunction | void,
+  deps: any[],
+) {
+  const effectHook = {
+    callback,
+    deps,
+  }
+
+  assertExist(wipFiber)
+  assertExist(wipFiber?.effectHooks)
+  wipFiber.effectHooks.push(effectHook)
+}
+
 function updateDOM(
   DOM: NonNullable<FiberNodeDOM>,
   prevProps: VirtualElementProps,
@@ -122,7 +136,9 @@ function workLoop(deadline: IdleDeadline) {
   }
 
   if (!nextUnitOfWork) {
+    console.log('end')
     commitRoot()
+    commitEffect()
   }
 
   nextUnitOfWork && requestIdleCallback(workLoop)
@@ -195,6 +211,33 @@ function commitRoot() {
   wipRoot = null
 }
 
+function commitEffect() {
+  assertExist(wipFiber)
+
+  function run(fiber?: Fiber) {
+    if (!fiber) {
+      return
+    }
+
+    if (!fiber?.alternate) {
+      fiber.effectHooks?.forEach((hook) => {
+        hook.callback()
+      })
+    } else {
+      fiber.effectHooks?.forEach((hook, index) => {
+        const oldFiber = fiber.alternate?.effectHooks?.[index]
+        const hasChanged = hook.deps.some((dep, i) => dep !== oldFiber?.deps[i])
+        hasChanged && hook.callback()
+      })
+
+      run(fiber.child)
+      run(fiber.sibling)
+    }
+  }
+
+  run(wipFiber)
+}
+
 function reconcileChildren(fiber: Fiber, virtualElements: ReactElement[] = []) {
   let oldFiber = fiber.alternate?.child
   let prevSibling: Fiber | undefined
@@ -259,6 +302,7 @@ function performUnitOfWork(fiber: Fiber) {
       wipFiber = fiber
       wipFiber.hooks = []
       hookIndex = 0
+      wipFiber.effectHooks = []
       reconcileChildren(fiber, [fiber.type(fiber.props)])
       break
 
